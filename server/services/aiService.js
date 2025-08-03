@@ -1,11 +1,9 @@
-import { pipeline } from '@xenova/transformers';
 import { NlpManager } from 'node-nlp';
 import axios from 'axios';
 
 class AIService {
   constructor() {
     this.nlp = null;
-    this.summarizer = null;
     this.initialized = false;
     this.initializing = false;
   }
@@ -33,9 +31,6 @@ class AIService {
       
       await this.nlp.train();
       
-      // Initialize summarization model in background (non-blocking)
-      this.initializeSummarizer();
-      
       this.initialized = true;
       console.log('✅ AI models initialized successfully');
     } catch (error) {
@@ -43,15 +38,6 @@ class AIService {
       // Continue without AI features if models fail to load
     } finally {
       this.initializing = false;
-    }
-  }
-
-  async initializeSummarizer() {
-    try {
-      this.summarizer = await pipeline('summarization', 'Xenova/distilbart-cnn-12-6');
-      console.log('✅ Summarization model loaded');
-    } catch (error) {
-      console.warn('⚠️ Summarization model failed to load:', error.message);
     }
   }
 
@@ -126,19 +112,16 @@ class AIService {
   }
 
   async generateSummary(text) {
-    if (!this.summarizer || text.length < 100) return '';
+    // Simple text summarization: return first 150 characters
+    if (!text || text.length < 100) return text || '';
     
-    try {
-      const result = await this.summarizer(text, {
-        max_length: 150,
-        min_length: 30,
-        do_sample: false
-      });
-      return result[0]?.summary_text || '';
-    } catch (error) {
-      console.warn('Summary generation failed:', error.message);
-      return '';
+    // Basic summarization: take first sentence or first 150 characters
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    if (sentences.length > 0 && sentences[0].length <= 150) {
+      return sentences[0].trim();
     }
+    
+    return text.length > 150 ? text.substring(0, 150) + '...' : text;
   }
 
   async extractKeywords(text) {

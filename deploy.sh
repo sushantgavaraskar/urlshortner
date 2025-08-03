@@ -1,187 +1,105 @@
 #!/bin/bash
 
-echo "🚀 SmartShort URL Shortener - Deployment Script"
-echo "================================================"
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# Function to print colored output
-print_status() {
-    echo -e "${GREEN}✅ $1${NC}"
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
-}
-
-print_error() {
-    echo -e "${RED}❌ $1${NC}"
-}
-
-# Step 1: Fix ESLint errors
+echo "🚀 SmartShort Deployment Script"
+echo "================================"
 echo ""
-echo "Step 1: Fixing ESLint errors..."
-node fix-eslint-errors.js
-
-# Step 2: Check if MongoDB is running
+echo "This script will help you deploy SmartShort to Vercel (Frontend) and Render (Backend)"
 echo ""
-echo "Step 2: Checking MongoDB..."
-if docker ps | grep -q mongodb; then
-    print_status "MongoDB is running"
-else
-    print_warning "MongoDB is not running. Starting it..."
-    docker-compose up mongodb -d
-    sleep 5
-fi
 
-# Step 3: Test frontend build
-echo ""
-echo "Step 3: Testing frontend build..."
-cd client
-if npm run build; then
-    print_status "Frontend build successful"
-else
-    print_error "Frontend build failed. Please fix the errors above."
+# Check if git is installed
+if ! command -v git &> /dev/null; then
+    echo "❌ Git is not installed. Please install Git first."
     exit 1
 fi
-cd ..
 
-# Step 4: Test backend
-echo ""
-echo "Step 4: Testing backend..."
-cd server
-if npm test 2>/dev/null || echo "No tests found, continuing..."; then
-    print_status "Backend tests passed (or no tests found)"
-else
-    print_warning "Backend tests failed, but continuing..."
-fi
-cd ..
-
-# Step 5: Environment check
-echo ""
-echo "Step 5: Checking environment files..."
-if [ -f "client/.env.local" ]; then
-    print_status "Frontend environment file exists"
-else
-    print_warning "Frontend environment file missing. Creating template..."
-    cat > client/.env.local << EOF
-# NextAuth Configuration
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-super-secret-key-here
-
-# Backend API URL
-NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
-
-# OAuth Providers (Optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-EOF
+# Check if we're in a git repository
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "❌ Not in a git repository. Please initialize git and commit your changes first."
+    exit 1
 fi
 
-if [ -f "server/.env" ]; then
-    print_status "Backend environment file exists"
-else
-    print_warning "Backend environment file missing. Creating template..."
-    cat > server/.env << EOF
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-
-# Database
-MONGODB_URI=mongodb://localhost:27017/smartshort
-
-# JWT Secret
-JWT_SECRET=your-jwt-secret-key
-
-# CORS Configuration
-CORS_ORIGIN=http://localhost:3000
-
-# Base URL for short links
-BASE_URL=http://localhost:5000
-EOF
-fi
-
-# Step 6: Start services
+echo "✅ Git repository detected"
 echo ""
-echo "Step 6: Starting services..."
-echo "Starting backend server..."
-cd server
-npm start &
-BACKEND_PID=$!
-cd ..
 
-echo "Starting frontend server..."
-cd client
-npm run dev &
-FRONTEND_PID=$!
-cd ..
-
-# Wait for services to start
-sleep 10
-
-# Step 7: Health checks
-echo ""
-echo "Step 7: Running health checks..."
-
-# Check backend
-if curl -s http://localhost:5000/api/health > /dev/null; then
-    print_status "Backend is running and healthy"
-else
-    print_error "Backend health check failed"
-fi
-
-# Check frontend
-if curl -s http://localhost:3000 > /dev/null; then
-    print_status "Frontend is running"
-else
-    print_error "Frontend health check failed"
-fi
-
-# Step 8: Deployment instructions
-echo ""
-echo "🎉 Local deployment successful!"
-echo ""
-echo "📋 Next steps for production deployment:"
-echo ""
-echo "1. Backend Deployment (Railway/Render):"
-echo "   - Push your code to GitHub"
-echo "   - Connect repository to Railway/Render"
-echo "   - Set environment variables"
-echo "   - Deploy"
-echo ""
-echo "2. Frontend Deployment (Vercel):"
-echo "   - Connect repository to Vercel"
-echo "   - Set root directory to 'client'"
-echo "   - Add environment variables"
-echo "   - Deploy"
-echo ""
-echo "3. Database Setup:"
-echo "   - Use MongoDB Atlas for production"
-echo "   - Update MONGODB_URI in backend"
-echo ""
-echo "📖 For detailed instructions, see: DEPLOYMENT_GUIDE.md"
-echo ""
-echo "🔗 Your local URLs:"
-echo "   Frontend: http://localhost:3000"
-echo "   Backend:  http://localhost:5000"
-echo ""
-echo "Press Ctrl+C to stop the servers"
-
-# Cleanup function
-cleanup() {
+# Check for uncommitted changes
+if ! git diff-index --quiet HEAD --; then
+    echo "⚠️  You have uncommitted changes. Please commit them before deploying."
+    echo "   Run: git add . && git commit -m 'Prepare for deployment'"
     echo ""
-    echo "🛑 Stopping servers..."
-    kill $BACKEND_PID 2>/dev/null
-    kill $FRONTEND_PID 2>/dev/null
-    exit 0
-}
+    read -p "Do you want to continue anyway? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+fi
 
-# Set up signal handlers
-trap cleanup SIGINT SIGTERM
+echo ""
+echo "📋 Deployment Steps:"
+echo "==================="
+echo ""
+echo "1. 🖥️  Backend Deployment (Render)"
+echo "   - Go to https://dashboard.render.com"
+echo "   - Create new Web Service"
+echo "   - Connect your GitHub repository"
+echo "   - Set Root Directory to: server"
+echo "   - Set Build Command to: npm ci --only=production"
+echo "   - Set Start Command to: npm start"
+echo ""
+echo "2. 🌐 Frontend Deployment (Vercel)"
+echo "   - Go to https://vercel.com/dashboard"
+echo "   - Create new project"
+echo "   - Import your GitHub repository"
+echo "   - Set Root Directory to: client"
+echo "   - Deploy"
+echo ""
 
-# Keep script running
-wait 
+echo "🔧 Environment Variables Setup:"
+echo "=============================="
+echo ""
+echo "Backend (Render) Environment Variables:"
+echo "NODE_ENV=production"
+echo "MONGODB_URI=mongodb+srv://urlshort:sushantno111@cluster0.akpgore.mongodb.net/urlshort"
+echo "CORS_ORIGIN=https://your-frontend-domain.vercel.app"
+echo "BASE_URL=https://your-backend-domain.onrender.com"
+echo ""
+echo "Frontend (Vercel) Environment Variables:"
+echo "NEXTAUTH_URL=https://your-frontend-domain.vercel.app"
+echo "NEXTAUTH_SECRET=your_generated_secret_here"
+echo "NEXT_PUBLIC_API_BASE_URL=https://your-backend-domain.onrender.com"
+echo "NEXT_PUBLIC_SOCKET_URL=https://your-backend-domain.onrender.com"
+echo "NEXT_PUBLIC_APP_NAME=SmartShort"
+echo "NEXT_PUBLIC_APP_DESCRIPTION=AI-Powered Real-Time URL Shortener"
+echo ""
+
+echo "🧪 Testing Your Deployment:"
+echo "=========================="
+echo ""
+echo "1. Test Backend: Visit https://your-backend-domain.onrender.com/api/health"
+echo "2. Test Frontend: Visit https://your-frontend-domain.vercel.app"
+echo "3. Test URL Shortening: Create a short URL on the frontend"
+echo ""
+
+echo "📚 For detailed instructions, see: VERCEL_DEPLOYMENT_GUIDE.md"
+echo ""
+
+# Push to git if there are changes
+if ! git diff-index --quiet HEAD --; then
+    echo "📤 Pushing changes to git..."
+    git add .
+    git commit -m "Prepare for deployment - Remove transformers dependency"
+    git push
+    echo "✅ Changes pushed to git"
+else
+    echo "✅ No changes to push"
+fi
+
+echo ""
+echo "🎉 Deployment preparation complete!"
+echo ""
+echo "Next steps:"
+echo "1. Deploy backend to Render"
+echo "2. Deploy frontend to Vercel"
+echo "3. Update environment variables"
+echo "4. Test the application"
+echo ""
+echo "For detailed instructions, see: VERCEL_DEPLOYMENT_GUIDE.md" 
