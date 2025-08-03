@@ -58,7 +58,7 @@ export default function ForgotPassword() {
               </h1>
               
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                We've sent a password reset link to <span className="font-medium text-gray-900 dark:text-white">{email}</span>
+                We&apos;ve sent a password reset link to <span className="font-medium text-gray-900 dark:text-white">{email}</span>
               </p>
               
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
