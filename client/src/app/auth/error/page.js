@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   ExclamationTriangleIcon,
@@ -8,7 +8,7 @@ import {
   HomeIcon
 } from '@heroicons/react/24/outline';
 
-export default function AuthError() {
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const error = searchParams.get('error');
@@ -118,4 +118,12 @@ export default function AuthError() {
       </div>
     </div>
   );
-} 
+}
+
+export default function AuthError() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthErrorContent />
+    </Suspense>
+  );
+}

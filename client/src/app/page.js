@@ -249,7 +249,7 @@ export default function HomePage() {
                     Get Started Today
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    Choose how you'd like to create your account
+                    Choose how you&apos;d like to create your account
                   </p>
                 </div>
                 
@@ -365,7 +365,7 @@ export default function HomePage() {
                           Sign Up & Create Account
                         </h4>
                         <p className="text-gray-600 dark:text-gray-400 text-sm">
-                          Click "Get Started" and sign in with Google or use our demo account to instantly access the platform.
+                          Click &quot;Get Started&quot; and sign in with Google or use our demo account to instantly access the platform.
                         </p>
                       </div>
                     </div>
@@ -379,7 +379,7 @@ export default function HomePage() {
                           Create Your First Short Link
                         </h4>
                         <p className="text-gray-600 dark:text-gray-400 text-sm">
-                          Paste any long URL, add a custom alias (optional), and click "Create Link" to generate your short URL.
+                          Paste any long URL, add a custom alias (optional), and click &quot;Create Link&quot; to generate your short URL.
                         </p>
                       </div>
                     </div>
@@ -408,7 +408,7 @@ export default function HomePage() {
                     <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
                       <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Custom Aliases</h4>
                       <p className="text-gray-600 dark:text-gray-400 text-sm">
-                        Create memorable short URLs like "mysite.com/awesome" instead of random characters.
+                        Create memorable short URLs like &quot;mysite.com/awesome&quot; instead of random characters.
                       </p>
                     </div>
                     <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
