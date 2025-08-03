@@ -2,26 +2,35 @@
 
 A modern, full-stack URL shortening application with AI-powered analytics, real-time tracking, and beautiful UI.
 
+## 🌐 Live Demo
+
+- **Frontend**: [https://urlshortner-gold.vercel.app](https://urlshortner-gold.vercel.app)
+- **Backend API**: [https://urlshortner-b2sf.onrender.com](https://urlshortner-b2sf.onrender.com)
+- **Dashboard**: [https://urlshortner-gold.vercel.app/dashboard](https://urlshortner-gold.vercel.app/dashboard)
+
 ## 🚀 Features
 
-- **AI-Powered Analytics**: Intelligent insights about your links
-- **Real-Time Tracking**: Live click monitoring and statistics
-- **Custom Aliases**: Create memorable short URLs
-- **Expiration Dates**: Set automatic link expiration
-- **Beautiful UI**: Modern, responsive design with dark mode
-- **Authentication**: Google OAuth and email/password login
+- **AI-Powered Analytics**: Intelligent insights about your links with AI-generated summaries
+- **Real-Time Tracking**: Live click monitoring and statistics with Socket.IO
+- **Custom Aliases**: Create memorable short URLs with custom slugs
+- **Expiration Dates**: Set automatic link expiration for temporary links
+- **Beautiful UI**: Modern, responsive design with dark mode support
+- **Authentication**: Google OAuth and email/password login with NextAuth.js
 - **Socket.IO**: Real-time updates and notifications
-- **MongoDB**: Scalable database with proper indexing
+- **MongoDB**: Scalable database with proper indexing and data persistence
+- **Rate Limiting**: Built-in protection against abuse
+- **Analytics Dashboard**: Comprehensive insights and performance metrics
 
 ## 🏗️ Architecture
 
-- **Frontend**: Next.js 15 with TypeScript
-- **Backend**: Express.js API server
-- **Database**: MongoDB with Mongoose
-- **Authentication**: NextAuth.js
-- **Real-time**: Socket.IO
-- **Styling**: Tailwind CSS
-- **Deployment**: Docker & Docker Compose
+- **Frontend**: Next.js 15 with App Router and TypeScript
+- **Backend**: Express.js API server with middleware
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: NextAuth.js with multiple providers
+- **Real-time**: Socket.IO for live updates
+- **Styling**: Tailwind CSS with custom components
+- **Deployment**: Vercel (Frontend) + Render (Backend)
+- **Containerization**: Docker & Docker Compose
 
 ## 🐳 Quick Start with Docker
 
@@ -121,6 +130,11 @@ url_shortner/
 ├── client/                 # Next.js frontend
 │   ├── src/
 │   │   ├── app/           # App router pages
+│   │   │   ├── analytics/ # Analytics dashboard
+│   │   │   ├── auth/      # Authentication pages
+│   │   │   ├── dashboard/ # Main dashboard
+│   │   │   ├── profile/   # User profile
+│   │   │   └── api/       # API routes
 │   │   ├── components/    # React components
 │   │   ├── contexts/      # React contexts
 │   │   ├── hooks/         # Custom hooks
@@ -163,11 +177,11 @@ PORT=5000
 NODE_ENV=production
 
 # MongoDB Configuration
-MONGODB_URI=mongodb://localhost:27017/smartshort
+MONGODB_URI=mongodb+srv://urlshort:sushantno111@cluster0.akpgore.mongodb.net/urlshort
 
 # CORS Configuration
-CORS_ORIGIN=http://localhost:3000
-BASE_URL=http://localhost:5000
+CORS_ORIGIN=https://urlshortner-gold.vercel.app
+BASE_URL=https://urlshortner-b2sf.onrender.com
 
 # Security
 SESSION_SECRET=your_session_secret
@@ -177,12 +191,12 @@ JWT_SECRET=your_jwt_secret
 #### Frontend (client/.env.local)
 ```env
 # NextAuth Configuration
-NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_URL=https://urlshortner-gold.vercel.app
 NEXTAUTH_SECRET=your_nextauth_secret
 
 # API Configuration
-NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
-NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
+NEXT_PUBLIC_API_BASE_URL=https://urlshortner-b2sf.onrender.com
+NEXT_PUBLIC_SOCKET_URL=https://urlshortner-b2sf.onrender.com
 
 # App Configuration
 NEXT_PUBLIC_APP_NAME=SmartShort
@@ -190,6 +204,11 @@ NEXT_PUBLIC_APP_DESCRIPTION=AI-Powered Real-Time URL Shortener
 ```
 
 ## 🚀 Deployment
+
+### Production Deployment URLs
+- **Frontend (Vercel)**: [https://urlshortner-gold.vercel.app](https://urlshortner-gold.vercel.app)
+- **Backend (Render)**: [https://urlshortner-b2sf.onrender.com](https://urlshortner-b2sf.onrender.com)
+- **Dashboard**: [https://urlshortner-gold.vercel.app/dashboard](https://urlshortner-gold.vercel.app/dashboard)
 
 ### Docker Deployment
 ```bash
@@ -201,12 +220,12 @@ docker-compose -f docker-compose.dev.yml up
 ```
 
 ### Manual Deployment
-1. Set up MongoDB (Atlas recommended)
-2. Configure environment variables
-3. Build and deploy frontend to Vercel/Netlify
-4. Deploy backend to Railway/DigitalOcean
+1. Set up MongoDB Atlas cluster
+2. Configure environment variables with production URLs
+3. Deploy frontend to Vercel
+4. Deploy backend to Render
 
-See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed instructions.
+See [VERCEL_DEPLOYMENT_GUIDE.md](VERCEL_DEPLOYMENT_GUIDE.md) for detailed instructions.
 
 ## 📊 API Endpoints
 
@@ -228,15 +247,18 @@ See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed instructions.
 
 - **Google OAuth**: Social login integration
 - **Email/Password**: Traditional authentication
+- **NextAuth.js**: Secure session management
 - **Demo Account**: Quick testing with demo credentials
 
 ## 🎨 UI Features
 
-- **Responsive Design**: Works on all devices
+- **Responsive Design**: Works on all devices and screen sizes
 - **Dark Mode**: Toggle between light and dark themes
-- **Real-Time Updates**: Live statistics and notifications
+- **Real-Time Updates**: Live statistics and notifications via Socket.IO
 - **Modern Animations**: Smooth transitions and effects
 - **Accessibility**: WCAG compliant design
+- **Loading States**: Optimistic UI updates
+- **Error Handling**: User-friendly error messages
 
 ## 🧪 Testing
 
@@ -248,33 +270,39 @@ npm test
 # Run frontend tests
 cd client
 npm test
+
+# Run E2E tests
+cd client
+npm run test:e2e
 ```
 
 ## 📚 Documentation
 
-- [Deployment Guide](DEPLOYMENT_GUIDE.md)
-- [Docker Deployment Guide](DOCKER_DEPLOYMENT_GUIDE.md)
+- [Vercel Deployment Guide](VERCEL_DEPLOYMENT_GUIDE.md)
+- [Quick Start Guide](QUICK_START.md)
 - [Production Readiness Summary](PRODUCTION_READINESS_SUMMARY.md)
 - [Setup Guide](SETUP_GUIDE.md)
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
 4. Add tests if applicable
-5. Submit a pull request
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Submit a pull request
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
 For issues and questions:
 1. Check the documentation
 2. Review existing issues
-3. Create a new issue with details
+3. Create a new issue with detailed information
 
 ## 🚀 Quick Commands
 
@@ -296,6 +324,15 @@ docker-compose down -v
 docker system prune -f
 ```
 
+## 🔗 Links
+
+- **Live Application**: [https://urlshortner-gold.vercel.app](https://urlshortner-gold.vercel.app)
+- **API Documentation**: [https://urlshortner-b2sf.onrender.com/api/health](https://urlshortner-b2sf.onrender.com/api/health)
+- **GitHub Repository**: [Repository URL]
+- **Issue Tracker**: [GitHub Issues]
+
 ---
 
-Built with ❤️ using Next.js, Express.js, MongoDB, and Docker. 
+Built with ❤️ using Next.js, Express.js, MongoDB, and Docker.
+
+**Deployed on Vercel & Render** 
