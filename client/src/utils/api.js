@@ -236,7 +236,8 @@ export const apiUtils = {
   },
 };
 
-const apiUtils = {
+// Main API object with all exports
+const api = {
   urlApi,
   analyticsApi,
   testApi,
@@ -245,4 +246,4 @@ const apiUtils = {
   apiUtils,
 };
 
-export default apiUtils; 
+export default api; 
