@@ -63,7 +63,7 @@ export default function ForgotPassword() {
               
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                  If you don't see the email, check your spam folder or try again.
+                  If you don&apos;t see the email, check your spam folder or try again.
                 </p>
               </div>
               
@@ -107,7 +107,7 @@ export default function ForgotPassword() {
               Forgot Password?
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Enter your email address and we'll send you a link to reset your password
+              Enter your email address and we&apos;ll send you a link to reset your password
             </p>
           </div>
 

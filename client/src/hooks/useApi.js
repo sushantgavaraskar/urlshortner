@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
-import { apiUtils } from '../utils/api';
+import { useCallback, useState } from 'react';
+import { urlApi, analyticsApi } from '../utils/api.js';
 
 /**
- * Custom hook for API calls with loading and error states
+ * Generic API hook for making API calls
  */
 export const useApi = () => {
   const [loading, setLoading] = useState(false);
@@ -11,13 +11,12 @@ export const useApi = () => {
   const callApi = useCallback(async (apiFunction, ...args) => {
     setLoading(true);
     setError(null);
-
+    
     try {
       const result = await apiFunction(...args);
       return result;
     } catch (err) {
-      const formattedError = apiUtils.formatError(err);
-      setError(formattedError);
+      setError(err.message || 'An error occurred');
       throw err;
     } finally {
       setLoading(false);
@@ -42,31 +41,30 @@ export const useApi = () => {
  */
 export const useUrlApi = () => {
   const { callApi, loading, error, clearError } = useApi();
-  const { urlApi } = require('../utils/api');
 
   const createUrl = useCallback(async (data) => {
     return callApi(urlApi.createUrl, data);
-  }, [callApi, urlApi.createUrl]);
+  }, [callApi]);
 
   const getUserUrls = useCallback(async (userId, params) => {
     return callApi(urlApi.getUserUrls, userId, params);
-  }, [callApi, urlApi.getUserUrls]);
+  }, [callApi]);
 
   const searchUrls = useCallback(async (userId, query, params) => {
     return callApi(urlApi.searchUrls, userId, query, params);
-  }, [callApi, urlApi.searchUrls]);
+  }, [callApi]);
 
   const deleteUrl = useCallback(async (urlId, userId) => {
     return callApi(urlApi.deleteUrl, urlId, userId);
-  }, [callApi, urlApi.deleteUrl]);
+  }, [callApi]);
 
   const updateUrl = useCallback(async (urlId, data) => {
     return callApi(urlApi.updateUrl, urlId, data);
-  }, [callApi, urlApi.updateUrl]);
+  }, [callApi]);
 
   const getUrlStats = useCallback(async (urlId, userId) => {
     return callApi(urlApi.getUrlStats, urlId, userId);
-  }, [callApi, urlApi.getUrlStats]);
+  }, [callApi]);
 
   return {
     createUrl,
@@ -86,7 +84,6 @@ export const useUrlApi = () => {
  */
 export const useAnalyticsApi = () => {
   const { callApi, loading, error, clearError } = useApi();
-  const { analyticsApi } = require('../utils/api');
 
   const getUserStats = useCallback(async (userId) => {
     return callApi(analyticsApi.getUserStats, userId);
