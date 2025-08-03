@@ -1,0 +1,16 @@
+node_modules/
+.env
+logs/
+*.log
+model.nlp
+.DS_Store
+*.sqlite
+*.db
+coverage/
+__pycache__/
+*.pyc
+.idea/
+.vscode/
+*.bak
+npm-debug.log*
+.env.example
