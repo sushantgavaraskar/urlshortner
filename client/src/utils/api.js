@@ -236,11 +236,13 @@ export const apiUtils = {
   },
 };
 
-export default {
+const apiUtils = {
   urlApi,
   analyticsApi,
   testApi,
   systemApi,
   getShortUrl,
   apiUtils,
-}; 
+};
+
+export default apiUtils; 

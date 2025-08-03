@@ -46,27 +46,27 @@ export const useUrlApi = () => {
 
   const createUrl = useCallback(async (data) => {
     return callApi(urlApi.createUrl, data);
-  }, [callApi]);
+  }, [callApi, urlApi.createUrl]);
 
   const getUserUrls = useCallback(async (userId, params) => {
     return callApi(urlApi.getUserUrls, userId, params);
-  }, [callApi]);
+  }, [callApi, urlApi.getUserUrls]);
 
   const searchUrls = useCallback(async (userId, query, params) => {
     return callApi(urlApi.searchUrls, userId, query, params);
-  }, [callApi]);
+  }, [callApi, urlApi.searchUrls]);
 
   const deleteUrl = useCallback(async (urlId, userId) => {
     return callApi(urlApi.deleteUrl, urlId, userId);
-  }, [callApi]);
+  }, [callApi, urlApi.deleteUrl]);
 
   const updateUrl = useCallback(async (urlId, data) => {
     return callApi(urlApi.updateUrl, urlId, data);
-  }, [callApi]);
+  }, [callApi, urlApi.updateUrl]);
 
   const getUrlStats = useCallback(async (urlId, userId) => {
     return callApi(urlApi.getUrlStats, urlId, userId);
-  }, [callApi]);
+  }, [callApi, urlApi.getUrlStats]);
 
   return {
     createUrl,
@@ -115,8 +115,10 @@ export const useAnalyticsApi = () => {
   };
 };
 
-export default {
+const apiHooks = {
   useApi,
   useUrlApi,
   useAnalyticsApi
-}; 
+};
+
+export default apiHooks; 
