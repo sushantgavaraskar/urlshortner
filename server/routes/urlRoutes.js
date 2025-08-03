@@ -1,5 +1,5 @@
-const express = require('express');
-const urlController = require('../controllers/urlController');
+import express from 'express';
+import urlController from '../controllers/urlController.js';
 const router = express.Router();
 
 // Create short URL
@@ -29,4 +29,4 @@ router.put('/:urlId', urlController.updateUrl);
 // Delete URL
 router.delete('/:urlId', urlController.deleteUrl);
 
-module.exports = router; 
+export default router; 

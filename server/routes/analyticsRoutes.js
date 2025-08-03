@@ -1,5 +1,5 @@
-const express = require('express');
-const analyticsController = require('../controllers/analyticsController');
+import express from 'express';
+import analyticsController from '../controllers/analyticsController.js';
 const router = express.Router();
 
 // Get user dashboard statistics
@@ -20,4 +20,4 @@ router.get('/global/stats', analyticsController.getGlobalStats);
 // Get overall statistics (alias for global stats)
 router.get('/overall', analyticsController.getGlobalStats);
 
-module.exports = router; 
+export default router; 

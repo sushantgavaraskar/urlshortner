@@ -1,4 +1,4 @@
-const analyticsController = require('../controllers/analyticsController');
+import analyticsController from '../controllers/analyticsController.js';
 
 const socketHandler = (io) => {
   console.log('🔌 Socket.IO server initialized');
@@ -128,4 +128,4 @@ const socketHandler = (io) => {
   return io;
 };
 
-module.exports = socketHandler; 
+export default socketHandler; 

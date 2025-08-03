@@ -1,24 +1,24 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const morgan = require('morgan');
-const dotenv = require('dotenv');
-const { createServer } = require('http');
-const { Server } = require('socket.io');
-const cron = require('node-cron');
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import cron from 'node-cron';
 
 // Load environment variables
 dotenv.config();
 
 // Import routes
-const urlRoutes = require('./routes/urlRoutes');
-const analyticsRoutes = require('./routes/analyticsRoutes');
+import urlRoutes from './routes/urlRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
 
 // Import socket handler
-const socketHandler = require('./utils/socket');
+import socketHandler from './utils/socket.js';
 
 // Import cleanup job
-const cleanupExpiredUrls = require('./jobs/cleanupExpiredUrls');
+import cleanupExpiredUrls from './jobs/cleanupExpiredUrls.js';
 
 const app = express();
 const server = createServer(app);
@@ -62,8 +62,8 @@ app.use('/api/analytics', analyticsRoutes);
 app.get('/r/:shortCode', async (req, res) => {
   try {
     const { shortCode } = req.params;
-    const urlController = require('./controllers/urlController');
-    await urlController.redirectToOriginal(req, res);
+    const urlController = await import('./controllers/urlController.js');
+    await urlController.default.redirectToOriginal(req, res);
   } catch (error) {
     res.status(404).json({ error: 'URL not found or expired' });
   }

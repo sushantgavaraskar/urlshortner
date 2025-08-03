@@ -1,5 +1,5 @@
-const Url = require('../models/Url');
-const crypto = require('crypto');
+import Url from '../models/Url.js';
+import crypto from 'crypto';
 
 class ShortenerService {
   constructor() {
@@ -241,4 +241,4 @@ class ShortenerService {
   }
 }
 
-module.exports = new ShortenerService(); 
+export default new ShortenerService(); 

@@ -1,5 +1,5 @@
-const Url = require('../models/Url');
-const User = require('../models/User');
+import Url from '../models/Url.js';
+import User from '../models/User.js';
 
 class AnalyticsController {
   // Get user dashboard statistics
@@ -338,4 +338,4 @@ class AnalyticsController {
   }
 }
 
-module.exports = new AnalyticsController(); 
+export default new AnalyticsController(); 

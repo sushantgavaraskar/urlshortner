@@ -1,6 +1,7 @@
-const shortenerService = require('../services/shortenerService');
-const aiService = require('../services/aiService');
-const Url = require('../models/Url');
+import shortenerService from '../services/shortenerService.js';
+import aiService from '../services/aiService.js';
+import Url from '../models/Url.js';
+import User from '../models/User.js';
 
 class UrlController {
   // Create short URL
@@ -106,7 +107,6 @@ class UrlController {
       }
 
       // Check if user exists (for testing purposes, we'll create a demo user if needed)
-      const User = require('../models/User');
       let user = await User.findById(userId);
       
       if (!user) {
@@ -375,4 +375,4 @@ class UrlController {
   }
 }
 
-module.exports = new UrlController(); 
+export default new UrlController(); 

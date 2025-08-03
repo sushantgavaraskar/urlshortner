@@ -1,6 +1,6 @@
-const { pipeline } = require('@xenova/transformers');
-const { NlpManager } = require('node-nlp');
-const axios = require('axios');
+import { pipeline } from '@xenova/transformers';
+import { NlpManager } from 'node-nlp';
+import axios from 'axios';
 
 class AIService {
   constructor() {
@@ -226,4 +226,4 @@ class AIService {
   }
 }
 
-module.exports = new AIService(); 
+export default new AIService(); 

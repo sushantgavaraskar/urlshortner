@@ -1,5 +1,5 @@
-const Url = require('../models/Url');
-const logger = require('../utils/logger');
+import Url from '../models/Url.js';
+import logger from '../utils/logger.js';
 
 const cleanupExpiredUrls = async () => {
   try {
@@ -47,4 +47,4 @@ const cleanupExpiredUrls = async () => {
   }
 };
 
-module.exports = cleanupExpiredUrls; 
+export default cleanupExpiredUrls; 
