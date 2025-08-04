@@ -75,6 +75,26 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug endpoint to test routing
+app.get('/api/debug', (req, res) => {
+  res.json({
+    message: 'Backend is working!',
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      CORS_ORIGIN: process.env.CORS_ORIGIN,
+      BASE_URL: process.env.BASE_URL,
+      MONGODB_URI: process.env.MONGODB_URI ? 'Set' : 'Not Set'
+    },
+    routes: [
+      '/api/health',
+      '/api/debug',
+      '/api/urls/*',
+      '/api/analytics/*',
+      '/r/:shortCode'
+    ]
+  });
+});
+
 // Make io available to routes
 app.set('io', io);
 

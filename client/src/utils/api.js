@@ -3,7 +3,8 @@
  * Handles all communication with the backend API
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+// Ensure API_BASE_URL doesn't have trailing slash to prevent double slashes
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
 
 class ApiError extends Error {
   constructor(message, status, data = null) {
@@ -20,6 +21,11 @@ class ApiError extends Error {
 async function apiRequest(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
   
+  // Debug logging in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('API Request:', { url, endpoint, API_BASE_URL });
+  }
+  
   const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
@@ -32,8 +38,20 @@ async function apiRequest(endpoint, options = {}) {
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      
+      // Provide more specific error messages
+      let errorMessage = errorData.error || `HTTP ${response.status}`;
+      
+      if (response.status === 401) {
+        errorMessage = 'Authentication required. Please sign in again.';
+      } else if (response.status === 404) {
+        errorMessage = `API endpoint not found: ${endpoint}`;
+      } else if (response.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      }
+      
       throw new ApiError(
-        errorData.error || `HTTP ${response.status}`,
+        errorMessage,
         response.status,
         errorData
       );
@@ -44,8 +62,15 @@ async function apiRequest(endpoint, options = {}) {
     if (error instanceof ApiError) {
       throw error;
     }
+    
+    // Handle network errors
+    let errorMessage = error.message || 'Network error';
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      errorMessage = 'Unable to connect to server. Please check your internet connection.';
+    }
+    
     throw new ApiError(
-      error.message || 'Network error',
+      errorMessage,
       0,
       null
     );

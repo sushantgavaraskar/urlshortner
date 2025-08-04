@@ -39,6 +39,7 @@ export default function Analytics() {
   // Fetch analytics data
   useEffect(() => {
     const fetchAnalyticsData = async () => {
+      // Only fetch data if user is authenticated and has a valid ID
       if (status === 'authenticated' && session?.user?.id) {
         try {
           setIsLoading(true);
@@ -70,11 +71,14 @@ export default function Analytics() {
         } finally {
           setIsLoading(false);
         }
+      } else if (status === 'unauthenticated') {
+        // If not authenticated, redirect to home
+        router.push('/');
       }
     };
 
     fetchAnalyticsData();
-  }, [status, session?.user?.id, getUserStats, getUserTimeline]);
+  }, [status, session?.user?.id, getUserStats, getUserTimeline, router]);
 
   // Loading state
   if (status === 'loading' || isLoading) {
@@ -107,7 +111,26 @@ export default function Analytics() {
     );
   }
 
-  const userId = session?.user?.id || '688e00ea9f3c26b75e6b53e8';
+  // Ensure we have a valid user ID
+  if (!session?.user?.id) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Navbar />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              User ID Not Found
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              Please sign in again to access analytics.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const userId = session.user.id;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">

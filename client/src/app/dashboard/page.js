@@ -17,17 +17,12 @@ export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Get user ID from session or use demo user ID
-  const userId = session?.user?.id || '688e00ea9f3c26b75e6b53e8';
-
   // Redirect if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/');
     }
   }, [status, router]);
-
-
 
   // Loading state
   if (status === 'loading') {
@@ -59,6 +54,27 @@ export default function Dashboard() {
       </div>
     );
   }
+
+  // Ensure we have a valid user ID
+  if (!session?.user?.id) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Navbar />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              User ID Not Found
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              Please sign in again to access your dashboard.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const userId = session.user.id;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
