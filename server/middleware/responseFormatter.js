@@ -70,12 +70,23 @@ export const responseFormatter = (req, res, next) => {
   // Override res.json to add consistent formatting
   const originalJson = res.json;
   res.json = function(data) {
-    // If data already has success property, return as is
+    // If data already has success property, return as is (don't wrap)
     if (data && typeof data === 'object' && 'success' in data) {
       return originalJson.call(this, data);
     }
 
-    // Format the response
+    // If data already has error property, format as error response
+    if (data && typeof data === 'object' && 'error' in data) {
+      const formattedResponse = {
+        success: false,
+        error: data.error,
+        message: data.message || 'An error occurred',
+        timestamp: new Date().toISOString()
+      };
+      return originalJson.call(this, formattedResponse);
+    }
+
+    // Format the response as success
     const formattedResponse = {
       success: true,
       data,

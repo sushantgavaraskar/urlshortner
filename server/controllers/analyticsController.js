@@ -1,5 +1,6 @@
 import Url from '../models/Url.js';
 import User from '../models/User.js';
+import mongoose from 'mongoose';
 
 class AnalyticsController {
   // Get user dashboard statistics
@@ -11,12 +12,17 @@ class AnalyticsController {
         return res.status(401).json({ error: 'User authentication required' });
       }
 
+      // Convert userId to ObjectId if it's a string
+      const userObjectId = mongoose.Types.ObjectId.isValid(userId) 
+        ? new mongoose.Types.ObjectId(userId) 
+        : userId;
+
       // Get total URLs
-      const totalUrls = await Url.countDocuments({ userId });
+      const totalUrls = await Url.countDocuments({ userId: userObjectId });
 
       // Get total clicks
       const totalClicks = await Url.aggregate([
-        { $match: { userId: userId } },
+        { $match: { userId: userObjectId } },
         { $group: { _id: null, total: { $sum: '$clicks' } } }
       ]);
 
@@ -25,12 +31,12 @@ class AnalyticsController {
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       
       const recentUrls = await Url.countDocuments({
-        userId,
+        userId: userObjectId,
         createdAt: { $gte: sevenDaysAgo }
       });
 
       // Get top performing URLs
-      const topUrls = await Url.find({ userId })
+      const topUrls = await Url.find({ userId: userObjectId })
         .sort({ clicks: -1 })
         .limit(5)
         .select('shortCode originalUrl clicks title');
@@ -40,7 +46,7 @@ class AnalyticsController {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const clicksByDay = await Url.aggregate([
-        { $match: { userId: userId } },
+        { $match: { userId: userObjectId } },
         { $unwind: '$clickHistory' },
         { $match: { 'clickHistory.timestamp': { $gte: thirtyDaysAgo } } },
         {
@@ -142,7 +148,12 @@ class AnalyticsController {
         return res.status(401).json({ error: 'User authentication required' });
       }
 
-      const url = await Url.findOne({ _id: urlId, userId });
+      // Convert userId to ObjectId if it's a string
+      const userObjectId = mongoose.Types.ObjectId.isValid(userId) 
+        ? new mongoose.Types.ObjectId(userId) 
+        : userId;
+
+      const url = await Url.findOne({ _id: urlId, userId: userObjectId });
       if (!url) {
         return res.status(404).json({ error: 'URL not found' });
       }
@@ -243,12 +254,17 @@ class AnalyticsController {
         return res.status(401).json({ error: 'User authentication required' });
       }
 
+      // Convert userId to ObjectId if it's a string
+      const userObjectId = mongoose.Types.ObjectId.isValid(userId) 
+        ? new mongoose.Types.ObjectId(userId) 
+        : userId;
+
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - parseInt(days));
 
       // Get URL creation timeline
       const urlTimeline = await Url.aggregate([
-        { $match: { userId: userId, createdAt: { $gte: startDate } } },
+        { $match: { userId: userObjectId, createdAt: { $gte: startDate } } },
         {
           $group: {
             _id: {
@@ -262,7 +278,7 @@ class AnalyticsController {
 
       // Get click activity timeline
       const clickTimeline = await Url.aggregate([
-        { $match: { userId: userId } },
+        { $match: { userId: userObjectId } },
         { $unwind: '$clickHistory' },
         { $match: { 'clickHistory.timestamp': { $gte: startDate } } },
         {
@@ -293,17 +309,22 @@ class AnalyticsController {
   // Get real-time analytics (for WebSocket)
   async getRealtimeStats(userId) {
     try {
+      // Convert userId to ObjectId if it's a string
+      const userObjectId = mongoose.Types.ObjectId.isValid(userId) 
+        ? new mongoose.Types.ObjectId(userId) 
+        : userId;
+
       // Get today's stats
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       const todayUrls = await Url.countDocuments({
-        userId,
+        userId: userObjectId,
         createdAt: { $gte: today }
       });
 
       const todayClicks = await Url.aggregate([
-        { $match: { userId: userId } },
+        { $match: { userId: userObjectId } },
         { $unwind: '$clickHistory' },
         { $match: { 'clickHistory.timestamp': { $gte: today } } },
         { $group: { _id: null, count: { $sum: 1 } } }
@@ -311,7 +332,7 @@ class AnalyticsController {
 
       // Get recent clicks (last 10)
       const recentClicks = await Url.aggregate([
-        { $match: { userId: userId } },
+        { $match: { userId: userObjectId } },
         { $unwind: '$clickHistory' },
         { $sort: { 'clickHistory.timestamp': -1 } },
         { $limit: 10 },

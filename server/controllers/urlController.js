@@ -48,48 +48,91 @@ class UrlController {
   });
 
   // Redirect to original URL
-  redirectToOriginal = asyncHandler(async (req, res) => {
-    const { shortCode } = req.params;
+  redirectToOriginal = async (req, res) => {
+    try {
+      const { shortCode } = req.params;
 
-    if (!shortCode) {
-      throw new ValidationError('Short code is required');
-    }
+      if (!shortCode) {
+        return res.status(400).json({
+          error: 'Short code is required',
+          message: 'Please provide a valid short URL'
+        });
+      }
 
-    const url = await Url.findOne({ 
-      shortCode, 
-      isActive: true,
-      $or: [
-        { expiresAt: { $exists: false } },
-        { expiresAt: { $gt: new Date() } }
-      ]
-    });
+      console.log(`🔍 Looking for URL with shortCode: ${shortCode}`);
 
-    if (!url) {
-      throw new NotFoundError('URL not found or expired');
-    }
+      // First, let's check if the URL exists at all
+      const allUrls = await Url.find({ shortCode });
+      console.log(`📊 Found ${allUrls.length} URLs with shortCode: ${shortCode}`);
+      
+      if (allUrls.length > 0) {
+        console.log('URL details:', allUrls[0]);
+      }
 
-    // Update click statistics
-    url.clicks += 1;
-    url.clickHistory.push({
-      timestamp: new Date(),
-      ip: req.ip,
-      userAgent: req.get('User-Agent'),
-      referer: req.get('Referer')
-    });
+      const url = await Url.findOne({ 
+        shortCode, 
+        isActive: true,
+        $or: [
+          { expiresAt: null },
+          { expiresAt: { $gt: new Date() } }
+        ]
+      });
 
-    await url.save();
+      if (!url) {
+        console.log(`❌ URL not found or expired for shortCode: ${shortCode}`);
+        
+        // Let's check what URLs exist with this shortCode
+        const existingUrls = await Url.find({ shortCode });
+        if (existingUrls.length > 0) {
+          console.log('Existing URLs with this shortCode:', existingUrls.map(u => ({
+            id: u._id,
+            shortCode: u.shortCode,
+            isActive: u.isActive,
+            expiresAt: u.expiresAt,
+            originalUrl: u.originalUrl
+          })));
+        }
+        
+        return res.status(404).json({
+          error: 'URL not found or expired',
+          message: 'The requested short URL does not exist or has expired',
+          shortCode: shortCode
+        });
+      }
 
-    // Emit real-time update if Socket.IO is available
-    if (req.app.get('io')) {
-      req.app.get('io').to(`user_${url.userId}`).emit('urlClicked', {
-        urlId: url._id,
-        shortCode: url.shortCode,
-        clicks: url.clicks
+      console.log(`✅ Found URL: ${url.originalUrl} for shortCode: ${shortCode}`);
+
+      // Update click statistics
+      url.clicks += 1;
+      url.lastClicked = new Date();
+      url.clickHistory.push({
+        timestamp: new Date(),
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        referrer: req.get('Referer')
+      });
+
+      await url.save();
+      console.log(`📊 Updated click count for ${shortCode}: ${url.clicks}`);
+
+      // Emit real-time update if Socket.IO is available
+      if (req.app.get('io')) {
+        req.app.get('io').to(`user_${url.userId}`).emit('urlClicked', {
+          urlId: url._id,
+          shortCode: url.shortCode,
+          clicks: url.clicks
+        });
+      }
+
+      res.redirect(url.originalUrl);
+    } catch (error) {
+      console.error('Redirect error in controller:', error);
+      return res.status(500).json({
+        error: 'Internal server error',
+        message: 'An error occurred while processing your request'
       });
     }
-
-    res.redirect(url.originalUrl);
-  });
+  };
 
   // Get user's URLs
   getUserUrls = asyncHandler(async (req, res) => {

@@ -156,10 +156,22 @@ app.get('/api', (req, res) => {
 app.get('/r/:shortCode', async (req, res) => {
   try {
     const { shortCode } = req.params;
+    
+    if (!shortCode) {
+      return res.status(400).json({ 
+        error: 'Short code is required',
+        message: 'Please provide a valid short URL'
+      });
+    }
+
     const urlController = await import('./controllers/urlController.js');
     await urlController.default.redirectToOriginal(req, res);
   } catch (error) {
-    res.status(404).json({ error: 'URL not found or expired' });
+    console.error('Redirect error:', error);
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: 'An error occurred while processing your request'
+    });
   }
 });
 
@@ -190,6 +202,151 @@ app.get('/api/debug', (req, res) => {
       '/r/:shortCode'
     ]
   });
+});
+
+// Test endpoint to create a test URL
+app.post('/api/test/create-url', async (req, res) => {
+  try {
+    const Url = (await import('./models/Url.js')).default;
+    const shortenerService = (await import('./services/shortenerService.js')).default;
+    const mongoose = (await import('mongoose')).default;
+    
+    // Create a test URL with proper ObjectId
+    const testUrl = await shortenerService.createShortUrl(
+      'https://www.google.com',
+      new mongoose.Types.ObjectId(), // Use proper ObjectId
+      {
+        title: 'Test URL',
+        description: 'A test URL for debugging'
+      }
+    );
+    
+    res.json({
+      message: 'Test URL created successfully',
+      url: testUrl,
+      redirectUrl: `${process.env.BASE_URL || 'http://localhost:5000'}/r/${testUrl.shortCode}`
+    });
+  } catch (error) {
+    console.error('Test URL creation error:', error);
+    res.status(500).json({
+      error: 'Failed to create test URL',
+      message: error.message
+    });
+  }
+});
+
+// Debug endpoint to check all URLs in database
+app.get('/api/debug/urls', async (req, res) => {
+  try {
+    const Url = (await import('./models/Url.js')).default;
+    const urls = await Url.find({}).select('shortCode originalUrl isActive expiresAt createdAt userId clicks');
+    
+    res.json({
+      message: 'All URLs in database',
+      count: urls.length,
+      urls: urls
+    });
+  } catch (error) {
+    console.error('Debug URLs error:', error);
+    res.status(500).json({
+      error: 'Failed to get URLs',
+      message: error.message
+    });
+  }
+});
+
+// Debug endpoint to test the exact redirect query
+app.get('/api/debug/test-redirect/:shortCode', async (req, res) => {
+  try {
+    const Url = (await import('./models/Url.js')).default;
+    const { shortCode } = req.params;
+    
+    console.log(`🔍 Testing redirect query for shortCode: ${shortCode}`);
+    
+    // Test different query conditions
+    const basicQuery = await Url.findOne({ shortCode });
+    console.log('Basic query result:', basicQuery);
+    
+    const activeQuery = await Url.findOne({ shortCode, isActive: true });
+    console.log('Active query result:', activeQuery);
+    
+    const expiresQuery = await Url.findOne({ 
+      shortCode, 
+      isActive: true,
+      $or: [
+        { expiresAt: null },
+        { expiresAt: { $gt: new Date() } }
+      ]
+    });
+    console.log('Expires query result:', expiresQuery);
+    
+    // Test the exact query from the redirect function
+    const url = await Url.findOne({ 
+      shortCode, 
+      isActive: true,
+      $or: [
+        { expiresAt: null },
+        { expiresAt: { $gt: new Date() } }
+      ]
+    });
+    
+    console.log('Final query result:', url);
+    
+    res.json({
+      message: 'Redirect query test',
+      shortCode: shortCode,
+      basicQuery: !!basicQuery,
+      activeQuery: !!activeQuery,
+      expiresQuery: !!expiresQuery,
+      finalQuery: !!url,
+      url: url ? {
+        id: url._id,
+        shortCode: url.shortCode,
+        originalUrl: url.originalUrl,
+        isActive: url.isActive,
+        expiresAt: url.expiresAt
+      } : null
+    });
+  } catch (error) {
+    console.error('Debug redirect test error:', error);
+    res.status(500).json({
+      error: 'Failed to test redirect query',
+      message: error.message
+    });
+  }
+});
+
+// Debug endpoint to check click count and history
+app.get('/api/debug/url-clicks/:shortCode', async (req, res) => {
+  try {
+    const Url = (await import('./models/Url.js')).default;
+    const { shortCode } = req.params;
+    
+    const url = await Url.findOne({ shortCode });
+    
+    if (!url) {
+      return res.status(404).json({
+        error: 'URL not found',
+        shortCode: shortCode
+      });
+    }
+    
+    res.json({
+      message: 'URL click details',
+      shortCode: shortCode,
+      originalUrl: url.originalUrl,
+      clicks: url.clicks,
+      clickHistory: url.clickHistory,
+      lastClicked: url.lastClicked,
+      createdAt: url.createdAt
+    });
+  } catch (error) {
+    console.error('Debug URL clicks error:', error);
+    res.status(500).json({
+      error: 'Failed to get URL click details',
+      message: error.message
+    });
+  }
 });
 
 // Make io available to routes
