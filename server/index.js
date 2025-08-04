@@ -10,6 +10,21 @@ import cron from 'node-cron';
 // Load environment variables
 dotenv.config();
 
+// Import middleware
+import {
+  errorHandler,
+  notFoundHandler,
+  responseFormatter,
+  corsOptions,
+  securityHeaders,
+  requestLogger,
+  requestSizeLimiter,
+  xssProtection,
+  sqlInjectionProtection,
+  healthCheck,
+  createRateLimiter
+} from './middleware/index.js';
+
 // Import routes
 import urlRoutes from './routes/urlRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
@@ -31,20 +46,32 @@ const io = new Server(server, {
   }
 });
 
-// Middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || "http://localhost:3000",
-  credentials: true
-}));
+// Security middleware
+app.use(securityHeaders);
+app.use(cors(corsOptions));
+app.use(requestSizeLimiter('10mb'));
 
-// Use different logging for production
+// Request parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Logging middleware
 if (process.env.NODE_ENV === 'production') {
   app.use(morgan('combined'));
 } else {
   app.use(morgan('dev'));
 }
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+
+// Custom middleware
+app.use(requestLogger);
+app.use(xssProtection);
+app.use(sqlInjectionProtection);
+app.use(responseFormatter);
+app.use(healthCheck);
+
+// Rate limiting
+const limiter = createRateLimiter(15 * 60 * 1000, 100); // 100 requests per 15 minutes
+app.use('/api/', limiter);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smartshort')
@@ -107,25 +134,11 @@ cron.schedule('0 * * * *', () => {
   cleanupExpiredUrls();
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('❌ Error:', err);
-  
-  // Don't expose internal errors in production
-  const errorMessage = process.env.NODE_ENV === 'development' 
-    ? err.message 
-    : 'Internal server error';
-    
-  res.status(500).json({ 
-    error: 'Internal server error',
-    message: errorMessage
-  });
-});
+// 404 handler (must be before error handler)
+app.use(notFoundHandler);
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
+// Error handling middleware (must be last)
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
