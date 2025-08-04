@@ -280,9 +280,15 @@ export const xssProtection = asyncHandler(async (req, res, next) => {
   const sanitizedQuery = sanitizeValue(req.query);
   const sanitizedParams = sanitizeValue(req.params);
 
-  Object.keys(req.body).forEach(key => req.body[key] = sanitizedBody[key]);
-  Object.keys(req.query).forEach(key => req.query[key] = sanitizedQuery[key]);
-  Object.keys(req.params).forEach(key => req.params[key] = sanitizedParams[key]);
+  if (req.body && typeof req.body === 'object') {
+    Object.keys(req.body).forEach(key => req.body[key] = sanitizedBody[key]);
+  }
+  if (req.query && typeof req.query === 'object') {
+    Object.keys(req.query).forEach(key => req.query[key] = sanitizedQuery[key]);
+  }
+  if (req.params && typeof req.params === 'object') {
+    Object.keys(req.params).forEach(key => req.params[key] = sanitizedParams[key]);
+  }
 
   next();
 });
