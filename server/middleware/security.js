@@ -275,9 +275,14 @@ export const xssProtection = asyncHandler(async (req, res, next) => {
     return value;
   };
 
-  req.body = sanitizeValue(req.body);
-  req.query = sanitizeValue(req.query);
-  req.params = sanitizeValue(req.params);
+  // Instead of reassigning, mutate in place for Express 5 compatibility
+  const sanitizedBody = sanitizeValue(req.body);
+  const sanitizedQuery = sanitizeValue(req.query);
+  const sanitizedParams = sanitizeValue(req.params);
+
+  Object.keys(req.body).forEach(key => req.body[key] = sanitizedBody[key]);
+  Object.keys(req.query).forEach(key => req.query[key] = sanitizedQuery[key]);
+  Object.keys(req.params).forEach(key => req.params[key] = sanitizedParams[key]);
 
   next();
 });
