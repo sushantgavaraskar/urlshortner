@@ -74,13 +74,83 @@ const limiter = createRateLimiter(15 * 60 * 1000, 100); // 100 requests per 15 m
 app.use('/api/', limiter);
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smartshort')
-.then(() => console.log('✅ Connected to MongoDB'))
-.catch(err => console.error('❌ MongoDB connection error:', err));
+const connectDB = async () => {
+  try {
+    const mongoUri = process.env.MONGODB_URI;
+    
+    if (!process.env.MONGODB_URI && process.env.NODE_ENV === 'production') {
+      console.error('❌ MONGODB_URI environment variable is required in production');
+      process.exit(1);
+    }
+    
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000, // 5 second timeout
+      socketTimeoutMS: 45000, // 45 second timeout
+    });
+    
+    console.log('✅ Connected to MongoDB');
+    console.log(`📊 Database: ${mongoose.connection.name}`);
+    console.log(`🌐 Host: ${mongoose.connection.host}`);
+    
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err.message);
+    
+    if (err.message.includes('ECONNREFUSED')) {
+      console.log('\n💡 Troubleshooting tips:');
+      console.log('1. For local development: Install and start MongoDB locally');
+      console.log('2. For production: Set MONGODB_URI environment variable');
+      console.log('3. Check your MongoDB Atlas connection string');
+      console.log('4. Ensure your IP is whitelisted in MongoDB Atlas');
+    }
+    
+    if (process.env.NODE_ENV === 'production') {
+      console.error('❌ Cannot start server without database connection');
+      process.exit(1);
+    } else {
+      console.log('⚠️  Server will start but database operations will fail');
+    }
+  }
+};
+
+// Connect to MongoDB
+connectDB();
+
+// Root route
+app.get('/', (req, res) => {
+  res.success({
+    message: 'SmartShort URL Shortener API',
+    version: '1.0.0',
+    description: 'A modern URL shortener with AI-powered analytics',
+    endpoints: {
+      api: '/api',
+      urls: '/api/urls',
+      analytics: '/api/analytics',
+      health: '/api/health',
+      debug: '/api/debug'
+    },
+    documentation: 'Check the README for API documentation',
+    frontend: 'https://urlshortner-gold.vercel.app'
+  });
+});
 
 // Routes
 app.use('/api/urls', urlRoutes);
 app.use('/api/analytics', analyticsRoutes);
+
+// Base API route
+app.get('/api', (req, res) => {
+  res.success({
+    message: 'SmartShort API',
+    version: '1.0.0',
+    endpoints: {
+      urls: '/api/urls',
+      analytics: '/api/analytics',
+      health: '/api/health',
+      debug: '/api/debug'
+    },
+    documentation: 'Check the README for API documentation'
+  });
+});
 
 // Redirect route for short URLs
 app.get('/r/:shortCode', async (req, res) => {

@@ -18,7 +18,7 @@ export default function LinkCard({ link, onDelete, onEdit }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const shortUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/r/${link.shortCode}`;
+  const shortUrl = `${(process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '')}/r/${link.shortCode}`;
 
   const copyToClipboard = async () => {
     try {

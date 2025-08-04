@@ -95,7 +95,7 @@ urlSchema.index({ clicks: -1 });
 
 // Virtual for full short URL
 urlSchema.virtual('shortUrl').get(function() {
-  return `${process.env.BASE_URL || 'http://localhost:5000'}/r/${this.shortCode}`;
+  return `${(process.env.BASE_URL || 'http://localhost:5000').replace(/\/$/, '')}/r/${this.shortCode}`;
 });
 
 // Ensure virtual fields are serialized
